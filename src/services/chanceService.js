@@ -14,6 +14,17 @@ function permutaciones(numero) {
   return resultado;
 }
 
+/**
+ * Valida las reglas de negocio para una apuesta de Chance.
+ * 
+ * @description Se valida que el valor sea múltiplo de 100 y esté dentro de los límites
+ * para evitar fraudes o errores de digitación, según lo acordado en REQ-HU-002.
+ * 
+ * @param {Object} apuesta - Objeto con { numero, modalidad, valor }.
+ * @returns {Object} La apuesta validada y formateada.
+ * @throws {Error} Si el número, modalidad o valor no cumplen las reglas.
+ * @traceability REQ-HU-002 (Historia de Usuario: Registro de Apuestas)
+ */
 function validarApuesta(apuesta) {
   const { numero, modalidad = 'DIRECTO', valor } = apuesta || {};
 
@@ -42,13 +53,14 @@ function validarApuesta(apuesta) {
 function calcularPremio(apuesta, resultado) {
   const ganador = resultado.slice(-apuesta.cifras);
   const factor = TABLA_PAGOS[apuesta.cifras];
-
+  
   if (apuesta.modalidad === 'DIRECTO') {
     return apuesta.numero === ganador ? apuesta.valor * factor : 0;
   }
-
+  
   const combinaciones = permutaciones(apuesta.numero);
   if (!combinaciones.has(ganador)) return 0;
+  
   return Math.floor((apuesta.valor * factor) / combinaciones.size);
 }
 

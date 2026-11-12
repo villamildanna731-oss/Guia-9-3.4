@@ -32,6 +32,7 @@ function crear({ tipo, nombre, fecha, acumulado = 0 }) {
     resultado: null,
     acumulado: tipo === 'BALOTO' ? acumulado : 0,
   };
+
   getDb().sorteos.push(sorteo);
   return sorteo;
 }
@@ -51,6 +52,7 @@ function registrarResultado(id, resultado) {
   sorteo.resultado = sorteo.tipo === 'CHANCE'
     ? chance.validarResultado(resultado)
     : baloto.validarJugada(resultado);
+    
   sorteo.estado = 'JUGADO';
   sorteo.jugadoEn = new Date().toISOString();
 

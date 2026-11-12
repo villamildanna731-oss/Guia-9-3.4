@@ -5,11 +5,11 @@ const { fechaLocal } = require('../utils/fechas');
 function resumen(vendedorId, fecha = fechaLocal()) {
   const db = getDb();
   const delDia = (iso) => fechaLocal(iso) === fecha;
-
+  
   const tickets = db.tickets.filter((t) => t.vendedorId === vendedorId && delDia(t.creadoEn));
   const validos = tickets.filter((t) => t.estado !== 'ANULADO');
   const pagos = db.pagos.filter((p) => p.usuarioId === vendedorId && delDia(p.fecha));
-
+  
   const totalVendido = validos.reduce((s, t) => s + t.total, 0);
   const totalPagado = pagos.reduce((s, p) => s + p.valor, 0);
 
@@ -28,14 +28,28 @@ function resumen(vendedorId, fecha = fechaLocal()) {
   };
 }
 
+/**
+ * Realiza el cierre de caja diario calculando sobrantes o faltantes.
+ * 
+ * @description Se calcula la diferencia entre el efectivo reportado y el saldo esperado
+ * para generar alertas de auditoría (REQ-HU-004).
+ * 
+ * @param {number} vendedorId - ID del vendedor.
+ * @param {Object} datos - Objeto con { efectivoReportado, fecha }.
+ * @returns {Object} El registro del cierre con su estado (CUADRADA, SOBRANTE, FALTANTE).
+ * @throws {Error} Si la caja ya fue cerrada o el efectivo es inválido.
+ * @traceability REQ-HU-004 (Historia de Usuario: Cierre de Caja)
+ */
 function cerrar(vendedorId, { efectivoReportado, fecha = fechaLocal() }) {
   if (!Number.isInteger(efectivoReportado) || efectivoReportado < 0) {
     throw new AppError('El efectivo reportado debe ser un entero positivo');
   }
+  
   const r = resumen(vendedorId, fecha);
   if (r.cerrada) throw new AppError('La caja de ese día ya fue cerrada', 409);
 
   const diferencia = efectivoReportado - r.saldoEsperado;
+  
   const cierre = {
     id: nextId('cierres'),
     ...r,
@@ -45,6 +59,7 @@ function cerrar(vendedorId, { efectivoReportado, fecha = fechaLocal() }) {
     estado: diferencia === 0 ? 'CUADRADA' : diferencia > 0 ? 'SOBRANTE' : 'FALTANTE',
     creadoEn: new Date().toISOString(),
   };
+
   getDb().cierres.push(cierre);
   return cierre;
 }

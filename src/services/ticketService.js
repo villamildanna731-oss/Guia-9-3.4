@@ -17,13 +17,14 @@ function guardar(ticket) {
   return ticket;
 }
 
-function venderChance(vendedor, { sorteoId, apuestas, cliente }) {
+function venderChance(vendedor, sorteoId, apuestas, cliente) {
   const sorteo = sorteos.obtener(sorteoId);
   sorteos.verificarVentaPermitida(sorteo, 'CHANCE');
 
   if (!Array.isArray(apuestas) || apuestas.length === 0 || apuestas.length > 5) {
     throw new AppError('Un tiquete de chance debe tener entre 1 y 5 apuestas');
   }
+
   const validas = apuestas.map(chance.validarApuesta);
 
   return guardar({
@@ -48,6 +49,7 @@ function venderBaloto(vendedor, { sorteoId, jugadas, cliente }) {
   if (!Array.isArray(jugadas) || jugadas.length === 0 || jugadas.length > 10) {
     throw new AppError('Un tiquete de Baloto debe tener entre 1 y 10 jugadas');
   }
+
   const validas = jugadas.map(baloto.validarJugada);
 
   return guardar({
@@ -75,7 +77,8 @@ function listar(usuario, { fecha, estado } = {}) {
   return getDb().tickets.filter((t) =>
     (usuario.rol === 'ADMIN' || t.vendedorId === usuario.id) &&
     (!estado || t.estado === estado) &&
-    (!fecha || t.creadoEn.startsWith(fecha)));
+    (!fecha || t.creadoEn.startsWith(fecha))
+  );
 }
 
 function consultar(codigo) {
@@ -90,14 +93,12 @@ function consultar(codigo) {
 
 function anular(codigo, usuario, motivo) {
   const ticket = buscar(codigo);
-
+  
   if (usuario.rol !== 'ADMIN' && ticket.vendedorId !== usuario.id) {
     throw new AppError('No puede anular tiquetes de otro vendedor', 403);
   }
   if (ticket.estado !== 'ACTIVO') throw new AppError(`El tiquete está ${ticket.estado}`, 409);
-  if (sorteos.obtener(ticket.sorteoId).estado === 'JUGADO') {
-    throw new AppError('No se puede anular un tiquete de un sorteo jugado', 409);
-  }
+  if (sorteos.obtener(ticket.sorteoId).estado === 'JUGADO') throw new AppError('No se puede anular un tiquete de un sorteo jugado', 409);
   if (usuario.rol !== 'ADMIN' && minutosEntre(ticket.creadoEn) > minutosAnulacion) {
     throw new AppError(`Solo se puede anular dentro de los ${minutosAnulacion} minutos siguientes a la venta`, 409);
   }
@@ -111,11 +112,12 @@ function anular(codigo, usuario, motivo) {
 function pagarPremio(codigo, usuario) {
   const ticket = buscar(codigo);
   const sorteo = sorteos.obtener(ticket.sorteoId);
-
+  
   if (sorteo.estado !== 'JUGADO') throw new AppError('El sorteo aún no se ha jugado', 409);
   if (ticket.estado === 'PAGADO') throw new AppError('El premio ya fue pagado', 409);
   if (ticket.estado !== 'ACTIVO') throw new AppError(`El tiquete está ${ticket.estado}`, 409);
   if (!ticket.premio) throw new AppError('El tiquete no tiene premio', 409);
+  
   if (diasEntre(sorteo.jugadoEn) > diasCaducidadPremio) {
     ticket.estado = 'CADUCADO';
     throw new AppError('El premio está caducado', 410);
@@ -129,6 +131,7 @@ function pagarPremio(codigo, usuario) {
     valor: ticket.premio,
     fecha: new Date().toISOString(),
   };
+
   getDb().pagos.push(pago);
   ticket.estado = 'PAGADO';
   return pago;
