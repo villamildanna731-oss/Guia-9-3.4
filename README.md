@@ -7,22 +7,19 @@
 
 API RESTful para la gestión integral de un puesto de chance y lotería (Baloto). Permite administrar ventas, anulaciones, cierres de caja y liquidación de sorteos de forma segura.
 
-## 📋 Tabla de Contenidos
-1. [Prerrequisitos](#prerrequisitos)
-2. [Instalación](#instalación)
-3. [Variables de Entorno](#variables-de-entorno)
-4. [Ejecución](#ejecución)
-5. [Estructura del Proyecto](#estructura-del-proyecto)
-6. [Documentación de la API](#documentación-de-la-api)
-7. [Trazabilidad](#trazabilidad)
+## 📋 Descripción General
+Este proyecto es el backend de un sistema de punto de venta para juegos de azar. Implementa reglas de negocio estrictas para la validación de apuestas, control de tiempos de anulación, gestión de inventario de tickets y cierres de caja diarios.
 
-## 🛠 Prerrequisitos
-- Node.js v18 o superior.
-- npm v9 o superior.
-- Git.
+## 🛠 Prerrequisitos del Sistema
+Antes de instalar, asegúrate de tener:
+- **Node.js**: v18.0.0 o superior.
+- **npm**: v9.0.0 o superior.
+- **Git**: Para clonar el repositorio.
 
-## 🚀 Instalación
-1. Clona este repositorio:
+## 🚀 Instalación Local Paso a Paso
+Sigue estos comandos en tu terminal para levantar el proyecto:
+
+1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/villamildanna731-oss/Guia-9-3.4.git
+   git clone https://github.com/TU_USUARIO/documentacionApi.git
    cd documentacionApi
